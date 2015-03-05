@@ -1,0 +1,83 @@
+if( dialogid == DIALOG_ALL_VEHICLES )
+	{
+	    if(!response) return SetPVarInt(playerid, "_selectedVehicle",INVALID_VEHICLE_ID);
+		new str[256];
+	    new vehicles = 0;
+	    dver[v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ]] = 1;
+	    new dv[32];
+		switch(dver[v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ]])
+		{
+		    case 1: dv = ""lyellow"Открыты";
+		    case 2: dv = ""lyellow"Закрыты";
+		}
+		format(str,sizeof(str),""ldarkblue">>"lwhite" Телепортировать к себе\n"ldarkblue">>"lwhite" Двери[%s"lwhite"]\n"ldarkblue">>"lwhite" Продать",dv);
+		for( new j = 0; j != MAX_CARS; j++ ){
+	    	if( ( !IsValidVehicle( v_system[ j ][ v_car ] ) ) || ( strcmp( v_system[ j ][ v_owner ], u_name[ playerid ], true ) ) ) continue;
+			if( ++vehicles == listitem + 1 ){
+			    SetPVarInt( playerid, "_selectedVehicle", j );
+			    ShowPlayerDialog( playerid, DIALOG_VEHICLE_OPTIONS, DIALOG_STYLE_LIST, vehicle_name_array[ GetVehicleModel( v_system[ j ][ v_car ] ) - 400 ], str, "Выбор", "Назад" );
+			    break;
+			}
+	    }
+	    return true;
+	}
+	if( dialogid == DIALOG_VEHICLE_OPTIONS ){
+	    if( !response ) return dcmd_myveh( playerid, "" );
+	    new engine, lights, alarm, doors, bonnet, boot, objective;
+		switch( listitem ){
+		    case 0:{//get
+		        if( ( IsPlayerInAnyVehicle( playerid ) ) ) return SendClientMessage( playerid, -1, "Выйдите из транспортного средства!" );
+				if( !IsValidVehicle( v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ] ) ) return SendClientMessage( playerid, -1, "Машины не существует, возможно ее уничтожили!" );
+		        new Float: x, Float: y, Float: z, Float: a, vehicleid = v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ];
+		        GetVehicleParamsEx(vehicleid,engine,lights,alarm,doors,bonnet,boot,objective);
+		        SetVehicleParamsEx(vehicleid,true,lights,alarm,doors,bonnet,boot,objective);
+		        dvig[playerid] = 1;
+		        GetPlayerPos( playerid, x, y, z );
+		        GetPlayerFacingAngle( playerid, a );
+
+		        SetVehiclePos( vehicleid, x, y, z + 0.5 );
+		        SetVehicleZAngle( vehicleid, a );
+		        SetVehicleVirtualWorld(vehicleid,GetPlayerVirtualWorld(playerid));
+
+		        PutPlayerInVehicle( playerid, vehicleid, 0 );
+		    }
+		    case 1:
+			{
+			    GetVehicleParamsEx(v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ],engine,lights,alarm,doors,bonnet,boot,objective);
+				if(dver[playerid] == 1)
+				{
+				    SetVehicleParamsEx(v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ],engine,lights,alarm,true,bonnet,boot,objective);
+				    dver[v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ]] = 2;
+				    new dv[32];
+				    new str[256];
+					switch(dver[v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ]])
+					{
+		   				case 1: dv = ""lyellow"Открыты";
+		    			case 2: dv = ""lyellow"Закрыты";
+					}
+					format(str,sizeof(str),""ldarkblue">>"lwhite" Телепортировать к себе\n"ldarkblue">>"lwhite" Двери[%s"lwhite"]\n"ldarkblue">>"lwhite" Продать",dv);
+					ShowPlayerDialog( playerid, DIALOG_VEHICLE_OPTIONS, DIALOG_STYLE_LIST, vehicle_name_array[ GetVehicleModel( v_system[ v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ] ][ v_car ] ) - 400 ], str, "Выбор", "Назад" );
+				}
+				else
+				{
+				    SetVehicleParamsEx(v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ],engine,lights,alarm,false,bonnet,boot,objective);
+				    dver[v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ]] = 1;
+				    new dv[32];
+				    new str[256];
+					switch(dver[v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ]])
+					{
+		   				case 1: dv = ""lyellow"Открыты";
+		    			case 2: dv = ""lyellow"Закрыты";
+					}
+					format(str,sizeof(str),""ldarkblue">>"lwhite" Телепортировать к себе\n"ldarkblue">>"lwhite" Двери[%s"lwhite"]\n"ldarkblue">>"lwhite" Продать",dv);
+					ShowPlayerDialog( playerid, DIALOG_VEHICLE_OPTIONS, DIALOG_STYLE_LIST, vehicle_name_array[ GetVehicleModel( v_system[ v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ] ][ v_car ] ) - 400 ], str, "Выбор", "Назад" );
+				}
+		    }
+		    case 2:{//sell
+		        new str[ 128 ];
+		        format( str, 128, "{ffffff}Вы действительно желаете продать свой {0066ff}%s?", vehicle_name_array[ GetVehicleModel( v_system[ GetPVarInt( playerid, "_selectedVehicle" )][ v_car ] ) - 400 ] );
+		        ShowPlayerDialog( playerid, DIALOG_VEHICLE_SELL, DIALOG_STYLE_MSGBOX, "{FFFFFF}Продажа ТС", str, "Да", "Нет");
+		    }
+		}
+	    return true;
+	}
